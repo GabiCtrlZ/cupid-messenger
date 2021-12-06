@@ -6,9 +6,7 @@ const to_skip = []
 
 let ids = []
 
-const sleep = (ms) => {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const {
   AUTH_LINK,
@@ -37,14 +35,12 @@ const get_ids = async (web_page) => {
     await sleep(250)
   }
 
-
   ids = await web_page.evaluate(() => {
     const data = document.querySelector('.userrow-bucket-container').innerHTML.match(/\/profile\/[0-9A-Za-z_.]+\?cf=likes/g)
-    return data.map(e => e.split('/')[2].split('?')[0])
+    return data.map((e) => e.split('/')[2].split('?')[0])
   })
   return ids.length > to_skip.length
 }
-
 
 const send_message = async (web_page) => {
   await web_page.waitForSelector('.profile-pill-buttons-message-icon')
@@ -88,7 +84,7 @@ const init = async () => {
     headless: false,
   })
   page = await browser.newPage()
-  await page.goto(`https://www.okcupid.com`, {
+  await page.goto('https://www.okcupid.com', {
     waitUntil: 'networkidle2',
   })
   await page.setCookie(...cookies)
@@ -103,7 +99,7 @@ const main = async () => {
   while (more_to_find) {
     while (ids.length) {
       const id = ids.pop()
-      
+
       if (to_skip.includes(id)) continue
 
       try {
@@ -130,7 +126,6 @@ const main = async () => {
     }
     console.log(ids)
   }
-
 
   await browser.close()
 }
