@@ -24,6 +24,10 @@ const cookies = [
   { name: 'ua', value: UA },
 ]
 
+const is_full_inbox = (web_page) => web_page.evaluate(() => {
+  return !!document.querySelector('.messenger-empty-state')
+})
+
 const get_ids = async (web_page) => {
   await page.goto('https://www.okcupid.com/who-you-like?cf=likesIncoming', {
     waitUntil: 'networkidle2',
@@ -42,12 +46,21 @@ const get_ids = async (web_page) => {
   return ids.length > to_skip.length
 }
 
-const send_message = async (web_page) => {
+const send_message = async (web_page, id) => {
   await web_page.waitForSelector('.profile-pill-buttons-message-icon')
 
   await web_page.evaluate(() => {
     document.querySelector('.profile-pill-buttons-message-icon').parentElement.click()
   })
+
+  await web_page.waitForSelector('.messenger')
+
+  const full_inbox = await is_full_inbox(web_page)
+
+  if (full_inbox) {
+    to_skip.push(id)
+    return
+  }
 
   await web_page.waitForSelector('.messenger-composer')
 
@@ -107,7 +120,7 @@ const main = async () => {
           waitUntil: 'networkidle2',
         })
         await get_insta(page, id)
-        await send_message(page)
+        await send_message(page, id)
       } catch (e) {
         console.log(e)
         to_skip.push(id)
