@@ -43,7 +43,7 @@ const get_ids = async (web_page) => {
     const data = document.querySelector('.userrow-bucket-container').innerHTML.match(/\/profile\/[0-9A-Za-z_.]+\?cf=likes/g)
     return data.map((e) => e.split('/')[2].split('?')[0])
   })
-  return ids.length >= to_skip.length
+  return ids.length > to_skip.length
 }
 
 const send_message = async (web_page, id) => {
