@@ -28,6 +28,16 @@ const is_full_inbox = (web_page) => web_page.evaluate(() => {
   return !!document.querySelector('.messenger-empty-state')
 })
 
+const close_cookies_popup_if_open = async (web_page) => web_page.evaluate(() => {
+  const cookiesPopup = document.querySelector('button[class="save-preference-btn-handler onetrust-close-btn-handler"]')
+  if (cookiesPopup) cookiesPopup.click()
+})
+
+const close_cookies_text_if_open = (web_page) => web_page.evaluate(() => {
+  const cookiesText = document.querySelector('.onetrust-accept-btn-handler')
+  if (cookiesText) cookiesText.click()
+})
+
 const get_ids = async (web_page) => {
   await page.goto('https://www.okcupid.com/who-you-like?cf=likesIncoming', {
     waitUntil: 'networkidle2',
@@ -35,6 +45,8 @@ const get_ids = async (web_page) => {
 
   await web_page.waitForSelector('.userrow-bucket-container')
   for (let i = 0; i < 50; i++) {
+    await close_cookies_popup_if_open(web_page)
+    await close_cookies_text_if_open(web_page)
     await web_page.type('.userrow-bucket-container', ' ')
     await sleep(250)
   }
@@ -62,18 +74,18 @@ const send_message = async (web_page, id) => {
     return
   }
 
-  await web_page.waitForSelector('.messenger-composer')
+  await web_page.waitForSelector('textarea[data-cy="messenger.messageInput"]')
 
   await web_page.evaluate(() => {
-    document.querySelector('.messenger-composer').value = 'היי! מה הולך?'
+    document.querySelector('textarea[data-cy="messenger.messageInput"]').value = 'היי! מה הולך?'
   })
 
-  await web_page.type('.messenger-composer', ' ')
+  await web_page.type('textarea[data-cy="messenger.messageInput"]', ' ')
 
-  await web_page.waitForSelector('.messenger-toolbar-send')
+  await web_page.waitForSelector('button[data-cy="messenger.sendButton"]')
 
   await web_page.evaluate(() => {
-    document.querySelector('.messenger-toolbar-send').click()
+    document.querySelector('button[data-cy="messenger.sendButton"]').click()
   })
 }
 
@@ -135,6 +147,7 @@ const main = async () => {
     try {
       more_to_find = await get_ids(page)
     } catch (e) {
+      console.log(e)
       more_to_find = false
     }
     console.log(ids)
